@@ -23,7 +23,7 @@
       "errors": [
         {
           "key": "",
-          "error": "Expected formatted but found number instead."
+          "error": "Expected value to be of type formatted, but found number instead."
         }
       ]
     }

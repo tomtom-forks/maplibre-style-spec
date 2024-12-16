@@ -53,7 +53,7 @@
       "errors": [
         {
           "key": "[4]",
-          "error": "Expected string but found number instead."
+          "error": "Expected value to be of type string, but found number instead."
         }
       ]
     }

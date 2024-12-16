@@ -11,8 +11,8 @@
       "result": "error",
       "errors": [
         {
-          "key": "",
-          "error": "'vertical-align' must be one of: 'bottom', 'center', 'top' but found 'unknown' instead."
+          "key": "[1]",
+          "error": "Expected one of: \"bottom\", \"center\", \"top\"; but found \"unknown\" instead."
         }
       ]
     }

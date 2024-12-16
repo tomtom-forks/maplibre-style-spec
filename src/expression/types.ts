@@ -44,12 +44,17 @@ export type VariableAnchorOffsetCollectionTypeT = {
 export type EvaluationKind = 'constant' | 'source' | 'camera' | 'composite';
 
 export type Type = NullTypeT | NumberTypeT | StringTypeT | BooleanTypeT | ColorTypeT | ProjectionDefinitionTypeT | ObjectTypeT | ValueTypeT |
-ArrayType | ErrorTypeT | CollatorTypeT | FormattedTypeT | PaddingTypeT | ResolvedImageTypeT | VariableAnchorOffsetCollectionTypeT;
+ArrayType | ErrorTypeT | CollatorTypeT | FormattedTypeT | PaddingTypeT | ResolvedImageTypeT | VariableAnchorOffsetCollectionTypeT | EnumType;
 
 export interface ArrayType<T extends Type = Type> {
     kind: 'array';
     itemType: T;
     N: number;
+}
+
+export interface EnumType {
+    kind: 'enum';
+    values: readonly string[];
 }
 
 export type NativeType = 'number' | 'string' | 'boolean' | 'null' | 'array' | 'object';
@@ -77,12 +82,21 @@ export function array<T extends Type>(itemType: T, N?: number | null): ArrayType
     };
 }
 
+export function enumType(values: readonly string[]): EnumType {
+    return {
+        kind: 'enum',
+        values
+    };
+}
+
 export function typeToString(type: Type): string {
     if (type.kind === 'array') {
         const itemType = typeToString(type.itemType);
         return typeof type.N === 'number' ?
             `array<${itemType}, ${type.N}>` :
             type.itemType.kind === 'value' ? 'array' : `array<${itemType}>`;
+    } else if (type.kind === 'enum') {
+        return `one of: ${type.values.map(v => `"${v}"`).join(', ')};`;
     } else {
         return type.kind;
     }
@@ -118,6 +132,8 @@ export function checkSubtype(expected: Type, t: Type): string {
             (typeof expected.N !== 'number' || expected.N === t.N)) {
             return null;
         }
+    } else if (expected.kind === 'enum' && t.kind === 'string') {
+        return null;
     } else if (expected.kind === t.kind) {
         return null;
     } else if (expected.kind === 'value') {
@@ -128,7 +144,14 @@ export function checkSubtype(expected: Type, t: Type): string {
         }
     }
 
-    return `Expected ${typeToString(expected)} but found ${typeToString(t)} instead.`;
+    return `Expected value to be of type ${typeToString(expected)}, but found ${typeToString(t)} instead.`;
+}
+
+export function checkEnum(expected: Type, value: unknown): string {
+    if (expected.kind === 'enum' && typeof value === 'string' && !expected.values.includes(value)) {
+        return `Expected ${typeToString(expected)} but found "${value}" instead.`;
+    }
+    return null;
 }
 
 export function isValidType(provided: Type, allowedTypes: Array<Type>): boolean {

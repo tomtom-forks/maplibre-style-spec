@@ -18,7 +18,7 @@
       "errors": [
         {
           "key": "[4]",
-          "error": "Expected string but found boolean instead."
+          "error": "Expected value to be of type string, but found boolean instead."
         }
       ]
     }
