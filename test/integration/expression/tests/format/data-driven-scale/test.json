@@ -31,7 +31,7 @@
       "errors": [
         {
           "key": "[1]",
-          "error": "Expected array<string> but found array instead."
+          "error": "Expected value to be of type array<string>, but found array instead."
         }
       ]
     }

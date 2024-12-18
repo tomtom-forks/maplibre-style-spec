@@ -7,7 +7,8 @@ import {
     BooleanType,
     checkSubtype,
     typeToString,
-    array
+    array,
+    checkEnum
 } from '../types';
 import {RuntimeError} from '../runtime_error';
 import {typeOf} from '../values';
@@ -85,11 +86,11 @@ export class Assertion implements Expression {
     evaluate(ctx: EvaluationContext) {
         for (let i = 0; i < this.args.length; i++) {
             const value = this.args[i].evaluate(ctx);
-            const error = checkSubtype(this.type, typeOf(value));
+            const error = checkSubtype(this.type, typeOf(value)) || checkEnum(this.type, value);
             if (!error) {
                 return value;
             } else if (i === this.args.length - 1) {
-                throw new RuntimeError(`Expected value to be of type ${typeToString(this.type)}, but found ${typeToString(typeOf(value))} instead.`);
+                throw new RuntimeError(error);
             }
         }
 

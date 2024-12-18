@@ -26,7 +26,7 @@
       "errors": [
         {
           "key": "",
-          "error": "Expected array<number, 3> but found array<number> instead."
+          "error": "Expected value to be of type array<number, 3>, but found array<number> instead."
         }
       ]
     }

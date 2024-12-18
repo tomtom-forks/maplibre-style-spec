@@ -118,7 +118,7 @@ export class ParsingContext {
                     //   * The "coalesce" operator, which needs to omit type annotations.
                     //   * String-valued properties (e.g. `text-field`), where coercion is more convenient than assertion.
                     //
-                    if ((expected.kind === 'string' || expected.kind === 'number' || expected.kind === 'boolean' || expected.kind === 'object' || expected.kind === 'array') && actual.kind === 'value') {
+                    if ((expected.kind === 'string' || expected.kind === 'number' || expected.kind === 'boolean' || expected.kind === 'object' || expected.kind === 'array' || expected.kind === 'enum') && actual.kind === 'value') {
                         parsed = annotate(parsed, expected, options.typeAnnotation || 'assert');
                     } else if ((expected.kind === 'projectionDefinition') && (actual.kind === 'string' || actual.kind === 'array')) {
                         parsed = annotate(parsed, expected, options.typeAnnotation || 'coerce');
@@ -128,6 +128,8 @@ export class ParsingContext {
                         parsed = annotate(parsed, expected, options.typeAnnotation || 'coerce');
                     } else if (expected.kind === 'variableAnchorOffsetCollection' && (actual.kind === 'value' || actual.kind === 'array')) {
                         parsed = annotate(parsed, expected, options.typeAnnotation || 'coerce');
+                    } else if (expected.kind === 'enum' && actual.kind === 'string') {
+                        parsed = annotate(parsed, expected, options.typeAnnotation || 'assert');
                     } else if (this.checkSubtype(expected, actual)) {
                         return null;
                     }

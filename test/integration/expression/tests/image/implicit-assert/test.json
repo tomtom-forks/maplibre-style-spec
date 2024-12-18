@@ -23,7 +23,7 @@
       "errors": [
         {
           "key": "",
-          "error": "Expected resolvedImage but found number instead."
+          "error": "Expected value to be of type resolvedImage, but found number instead."
         }
       ]
     }
