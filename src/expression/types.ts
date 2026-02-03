@@ -13,6 +13,9 @@ export type BooleanTypeT = {
 export type ColorTypeT = {
     kind: 'color';
 };
+export type ProjectionDefinitionTypeT = {
+    kind: 'projectionDefinition';
+};
 export type ObjectTypeT = {
     kind: 'object';
 };
@@ -31,6 +34,12 @@ export type FormattedTypeT = {
 export type PaddingTypeT = {
     kind: 'padding';
 };
+export type NumberArrayTypeT = {
+    kind: 'numberArray';
+};
+export type ColorArrayTypeT = {
+    kind: 'colorArray';
+};
 export type ResolvedImageTypeT = {
     kind: 'resolvedImage';
 };
@@ -40,8 +49,24 @@ export type VariableAnchorOffsetCollectionTypeT = {
 
 export type EvaluationKind = 'constant' | 'source' | 'camera' | 'composite';
 
-export type Type = NullTypeT | NumberTypeT | StringTypeT | BooleanTypeT | ColorTypeT | ObjectTypeT | ValueTypeT |
-ArrayType | ErrorTypeT | CollatorTypeT | FormattedTypeT | PaddingTypeT | ResolvedImageTypeT | VariableAnchorOffsetCollectionTypeT;
+export type Type =
+    | NullTypeT
+    | NumberTypeT
+    | StringTypeT
+    | BooleanTypeT
+    | ColorTypeT
+    | ProjectionDefinitionTypeT
+    | ObjectTypeT
+    | ValueTypeT
+    | ArrayType
+    | ErrorTypeT
+    | CollatorTypeT
+    | FormattedTypeT
+    | PaddingTypeT
+    | NumberArrayTypeT
+    | ColorArrayTypeT
+    | ResolvedImageTypeT
+    | VariableAnchorOffsetCollectionTypeT;
 
 export interface ArrayType<T extends Type = Type> {
     kind: 'array';
@@ -56,14 +81,21 @@ export const NumberType = {kind: 'number'} as NumberTypeT;
 export const StringType = {kind: 'string'} as StringTypeT;
 export const BooleanType = {kind: 'boolean'} as BooleanTypeT;
 export const ColorType = {kind: 'color'} as ColorTypeT;
+export const ProjectionDefinitionType = {
+    kind: 'projectionDefinition'
+} as ProjectionDefinitionTypeT;
 export const ObjectType = {kind: 'object'} as ObjectTypeT;
 export const ValueType = {kind: 'value'} as ValueTypeT;
 export const ErrorType = {kind: 'error'} as ErrorTypeT;
 export const CollatorType = {kind: 'collator'} as CollatorTypeT;
 export const FormattedType = {kind: 'formatted'} as FormattedTypeT;
 export const PaddingType = {kind: 'padding'} as PaddingTypeT;
+export const ColorArrayType = {kind: 'colorArray'} as ColorArrayTypeT;
+export const NumberArrayType = {kind: 'numberArray'} as NumberArrayTypeT;
 export const ResolvedImageType = {kind: 'resolvedImage'} as ResolvedImageTypeT;
-export const VariableAnchorOffsetCollectionType = {kind: 'variableAnchorOffsetCollection'} as VariableAnchorOffsetCollectionTypeT;
+export const VariableAnchorOffsetCollectionType = {
+    kind: 'variableAnchorOffsetCollection'
+} as VariableAnchorOffsetCollectionTypeT;
 
 export function array<T extends Type>(itemType: T, N?: number | null): ArrayType<T> {
     return {
@@ -73,12 +105,14 @@ export function array<T extends Type>(itemType: T, N?: number | null): ArrayType
     };
 }
 
-export function toString(type: Type): string {
+export function typeToString(type: Type): string {
     if (type.kind === 'array') {
-        const itemType = toString(type.itemType);
-        return typeof type.N === 'number' ?
-            `array<${itemType}, ${type.N}>` :
-            type.itemType.kind === 'value' ? 'array' : `array<${itemType}>`;
+        const itemType = typeToString(type.itemType);
+        return typeof type.N === 'number'
+            ? `array<${itemType}, ${type.N}>`
+            : type.itemType.kind === 'value'
+              ? 'array'
+              : `array<${itemType}>`;
     } else {
         return type.kind;
     }
@@ -90,10 +124,13 @@ const valueMemberTypes = [
     StringType,
     BooleanType,
     ColorType,
+    ProjectionDefinitionType,
     FormattedType,
     ObjectType,
     array(ValueType),
     PaddingType,
+    NumberArrayType,
+    ColorArrayType,
     ResolvedImageType,
     VariableAnchorOffsetCollectionType
 ];
@@ -108,9 +145,12 @@ export function checkSubtype(expected: Type, t: Type): string {
         // Error is a subtype of every type
         return null;
     } else if (expected.kind === 'array') {
-        if (t.kind === 'array' &&
-            ((t.N === 0 && t.itemType.kind === 'value') || !checkSubtype(expected.itemType, t.itemType)) &&
-            (typeof expected.N !== 'number' || expected.N === t.N)) {
+        if (
+            t.kind === 'array' &&
+            ((t.N === 0 && t.itemType.kind === 'value') ||
+                !checkSubtype(expected.itemType, t.itemType)) &&
+            (typeof expected.N !== 'number' || expected.N === t.N)
+        ) {
             return null;
         }
     } else if (expected.kind === t.kind) {
@@ -123,15 +163,15 @@ export function checkSubtype(expected: Type, t: Type): string {
         }
     }
 
-    return `Expected ${toString(expected)} but found ${toString(t)} instead.`;
+    return `Expected ${typeToString(expected)} but found ${typeToString(t)} instead.`;
 }
 
 export function isValidType(provided: Type, allowedTypes: Array<Type>): boolean {
-    return allowedTypes.some(t => t.kind === provided.kind);
+    return allowedTypes.some((t) => t.kind === provided.kind);
 }
 
 export function isValidNativeType(provided: any, allowedTypes: Array<NativeType>): boolean {
-    return allowedTypes.some(t => {
+    return allowedTypes.some((t) => {
         if (t === 'null') {
             return provided === null;
         } else if (t === 'array') {

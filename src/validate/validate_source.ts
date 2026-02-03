@@ -1,18 +1,17 @@
-
-import ValidationError from '../error/validation_error';
+import {ValidationError} from '../error/validation_error';
 import {unbundle} from '../util/unbundle_jsonlint';
-import validateObject from './validate_object';
-import validateEnum from './validate_enum';
-import validateExpression from './validate_expression';
-import validateString from './validate_string';
-import getType from '../util/get_type';
-import validateRasterDEMSource from './validate_raster_dem_source';
+import {validateObject} from './validate_object';
+import {validateEnum} from './validate_enum';
+import {validateExpression} from './validate_expression';
+import {validateString} from './validate_string';
+import {getType} from '../util/get_type';
+import {validateRasterDEMSource} from './validate_raster_dem_source';
 
 const objectElementValidators = {
     promoteId: validatePromoteId
 };
 
-export default function validateSource(options) {
+export function validateSource(options) {
     const value = options.value;
     const key = options.key;
     const styleSpec = options.styleSpec;
@@ -36,7 +35,7 @@ export default function validateSource(options) {
                 style: options.style,
                 styleSpec,
                 objectElementValidators,
-                validateSpec,
+                validateSpec
             });
             return errors;
         case 'raster-dem':
@@ -45,7 +44,7 @@ export default function validateSource(options) {
                 value,
                 style: options.style,
                 styleSpec,
-                validateSpec,
+                validateSpec
             });
             return errors;
 
@@ -62,20 +61,27 @@ export default function validateSource(options) {
             if (value.cluster) {
                 for (const prop in value.clusterProperties) {
                     const [operator, mapExpr] = value.clusterProperties[prop];
-                    const reduceExpr = typeof operator === 'string' ? [operator, ['accumulated'], ['get', prop]] : operator;
+                    const reduceExpr =
+                        typeof operator === 'string'
+                            ? [operator, ['accumulated'], ['get', prop]]
+                            : operator;
 
-                    errors.push(...validateExpression({
-                        key: `${key}.${prop}.map`,
-                        value: mapExpr,
-                        validateSpec,
-                        expressionContext: 'cluster-map'
-                    }));
-                    errors.push(...validateExpression({
-                        key: `${key}.${prop}.reduce`,
-                        value: reduceExpr,
-                        validateSpec,
-                        expressionContext: 'cluster-reduce'
-                    }));
+                    errors.push(
+                        ...validateExpression({
+                            key: `${key}.${prop}.map`,
+                            value: mapExpr,
+                            validateSpec,
+                            expressionContext: 'cluster-map'
+                        })
+                    );
+                    errors.push(
+                        ...validateExpression({
+                            key: `${key}.${prop}.reduce`,
+                            value: reduceExpr,
+                            validateSpec,
+                            expressionContext: 'cluster-reduce'
+                        })
+                    );
                 }
             }
             return errors;
@@ -101,13 +107,22 @@ export default function validateSource(options) {
             });
 
         case 'canvas':
-            return [new ValidationError(key, null, 'Please use runtime APIs to add canvas sources, rather than including them in stylesheets.', 'source.canvas')];
+            return [
+                new ValidationError(
+                    key,
+                    null,
+                    'Please use runtime APIs to add canvas sources, rather than including them in stylesheets.',
+                    'source.canvas'
+                )
+            ];
 
         default:
             return validateEnum({
                 key: `${key}.type`,
                 value: value.type,
-                valueSpec: {values: ['vector', 'raster', 'raster-dem', 'geojson', 'video', 'image']},
+                valueSpec: {
+                    values: ['vector', 'raster', 'raster-dem', 'geojson', 'video', 'image']
+                },
                 style,
                 validateSpec,
                 styleSpec

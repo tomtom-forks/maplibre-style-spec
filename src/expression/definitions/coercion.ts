@@ -1,12 +1,17 @@
 import {BooleanType, ColorType, NumberType, StringType, ValueType} from '../types';
-import {Color, Padding, VariableAnchorOffsetCollection, toString as valueToString, validateRGBA} from '../values';
-import RuntimeError from '../runtime_error';
-import Formatted from '../types/formatted';
-import ResolvedImage from '../types/resolved_image';
+import {valueToString, validateRGBA} from '../values';
+import {RuntimeError} from '../runtime_error';
+import {Formatted} from '../types/formatted';
+import {ResolvedImage} from '../types/resolved_image';
+import {Color} from '../types/color';
+import {Padding} from '../types/padding';
+import {NumberArray} from '../types/number_array';
+import {ColorArray} from '../types/color_array';
+import {VariableAnchorOffsetCollection} from '../types/variable_anchor_offset_collection';
 
 import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
+import type {ParsingContext} from '../parsing_context';
+import type {EvaluationContext} from '../evaluation_context';
 import type {Type} from '../types';
 
 const types = {
@@ -23,22 +28,21 @@ const types = {
  *
  * @private
  */
-class Coercion implements Expression {
+export class Coercion implements Expression {
     type: Type;
     args: Array<Expression>;
 
     constructor(type: Type, args: Array<Expression>) {
         this.type = type;
         this.args = args;
-
     }
 
     static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression {
-        if (args.length < 2)
-            return context.error('Expected at least one argument.') as null;
+        if (args.length < 2) return context.error('Expected at least one argument.') as null;
 
-        const name: string = (args[0] as any);
-        if (!types[name]) throw new Error(`Can't parse ${name} as it is not part of the known types`);
+        const name: string = args[0] as any;
+        if (!types[name])
+            throw new Error(`Can't parse ${name} as it is not part of the known types`);
         if ((name === 'to-boolean' || name === 'to-string') && args.length !== 2)
             return context.error('Expected one argument.') as null;
 
@@ -71,16 +75,24 @@ class Coercion implements Expression {
                         if (c) return c;
                     } else if (Array.isArray(input)) {
                         if (input.length < 3 || input.length > 4) {
-                            error = `Invalid rbga value ${JSON.stringify(input)}: expected an array containing either three or four numeric values.`;
+                            error = `Invalid rgba value ${JSON.stringify(input)}: expected an array containing either three or four numeric values.`;
                         } else {
                             error = validateRGBA(input[0], input[1], input[2], input[3]);
                         }
                         if (!error) {
-                            return new Color((input[0] as any) / 255, (input[1] as any) / 255, (input[2] as any) / 255, (input[3] as any));
+                            return new Color(
+                                (input[0] as any) / 255,
+                                (input[1] as any) / 255,
+                                (input[2] as any) / 255,
+                                input[3] as any
+                            );
                         }
                     }
                 }
-                throw new RuntimeError(error || `Could not parse color from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`);
+                throw new RuntimeError(
+                    error ||
+                        `Could not parse color from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`
+                );
             }
             case 'padding': {
                 let input;
@@ -92,7 +104,37 @@ class Coercion implements Expression {
                         return pad;
                     }
                 }
-                throw new RuntimeError(`Could not parse padding from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`);
+                throw new RuntimeError(
+                    `Could not parse padding from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`
+                );
+            }
+            case 'numberArray': {
+                let input;
+                for (const arg of this.args) {
+                    input = arg.evaluate(ctx);
+
+                    const val = NumberArray.parse(input);
+                    if (val) {
+                        return val;
+                    }
+                }
+                throw new RuntimeError(
+                    `Could not parse numberArray from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`
+                );
+            }
+            case 'colorArray': {
+                let input;
+                for (const arg of this.args) {
+                    input = arg.evaluate(ctx);
+
+                    const val = ColorArray.parse(input);
+                    if (val) {
+                        return val;
+                    }
+                }
+                throw new RuntimeError(
+                    `Could not parse colorArray from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`
+                );
             }
             case 'variableAnchorOffsetCollection': {
                 let input;
@@ -104,7 +146,9 @@ class Coercion implements Expression {
                         return coll;
                     }
                 }
-                throw new RuntimeError(`Could not parse variableAnchorOffsetCollection from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`);
+                throw new RuntimeError(
+                    `Could not parse variableAnchorOffsetCollection from value '${typeof input === 'string' ? input : JSON.stringify(input)}'`
+                );
             }
             case 'number': {
                 let value = null;
@@ -123,6 +167,8 @@ class Coercion implements Expression {
                 return Formatted.fromString(valueToString(this.args[0].evaluate(ctx)));
             case 'resolvedImage':
                 return ResolvedImage.fromString(valueToString(this.args[0].evaluate(ctx)));
+            case 'projectionDefinition':
+                return this.args[0].evaluate(ctx);
             default:
                 return valueToString(this.args[0].evaluate(ctx));
         }
@@ -133,8 +179,6 @@ class Coercion implements Expression {
     }
 
     outputDefined(): boolean {
-        return this.args.every(arg => arg.outputDefined());
+        return this.args.every((arg) => arg.outputDefined());
     }
 }
-
-export default Coercion;

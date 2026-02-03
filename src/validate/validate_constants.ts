@@ -1,7 +1,6 @@
+import {ValidationError} from '../error/validation_error';
 
-import ValidationError from '../error/validation_error';
-
-export default function validateConstants(options) {
+export function validateConstants(options) {
     const key = options.key;
     const constants = options.value;
 

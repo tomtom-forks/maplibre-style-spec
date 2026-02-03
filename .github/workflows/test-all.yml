@@ -6,18 +6,16 @@ on:
   pull_request:
   workflow_dispatch:
 
-permissions:
-  checks: write
-  pull-requests: write
-  contents: write
-
 jobs:
   code-hygiene:
     name: Code Hygiene
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version-file: '.nvmrc'
       - run: npm ci
@@ -28,33 +26,46 @@ jobs:
   unit-and-integration-tests:
     name: Unit and Integration Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version-file: '.nvmrc'
       - run: npm ci
-      - run: npm run jest-ci -- --coverage --coverageDirectory=coverage-unit --coverageReporters json --selectProjects unit
-      - run: npm run jest-ci -- --coverage --coverageDirectory=coverage-integration --coverageReporters json --selectProjects integration
+      - run: npm run test-unit-ci
+      - run: npm run test-integration-ci
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
-          files: ${{ github.workspace }}/coverage-unit/coverage-final.json, ${{ github.workspace }}/coverage-integration/coverage-final.json
+          files: ${{ github.workspace }}/coverage/vitest/unit/coverage-final.json, ${{ github.workspace }}/coverage/vitest/integration/coverage-final.json
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   packaging-tests:
     name: Packaging and Build tests
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version-file: '.nvmrc'
       - run: npm ci
       - run: npm run generate-style-spec
       - run: npm run generate-typings
       - run: npm run build
-      - run: npm run jest-ci -- --selectProjects build
-        if: success() || failure()
+      - run: npm run test-build-ci
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
+        with:
+          files: ${{ github.workspace }}/coverage/vitest/build/coverage-final.json
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}

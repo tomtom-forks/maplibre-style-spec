@@ -15,16 +15,6 @@ It is a good idea to discuss proposed changes before proceeding to an issue tick
 
 MapLibre software relies heavily on automated testing, and the project includes a suite of unit and integration tests. For both new features and bug fixes, contributions should update or add test cases to prevent regressions.
 
-# Building the Docs site
-
-The MapLibre style spec documnetions site is based on [SolidStart](https://start.solidjs.com/) in order to get Server Side Rendering for Search Engine Optimization.
-
-```bash
-cd docs
-npm ci
-npm run dev
-```
-
 # Building the Style spec JS package
 
 This package is used by `maplibre-gl` in order to validate the spec and parse it.
@@ -32,6 +22,8 @@ It also has some other tools as can be read in the main README file.
 
 ```bash
 npm install
+npm run generate-style-spec
+npm run generate-typings
 npm run build
 ```
 
@@ -43,10 +35,10 @@ There are a few layers of tests - integration, unit and build tests.
 ```bash
 npm run test-unit
 npm run test-integration
-npm run test-build
+npm run test-build  # follow steps from previous section before
 ```
 
-In intergration tests, if there's a need to update the expected resutls you'll need to run the tests with the `UPDATE=1` environment flag. 
+In intergration tests, if there's a need to update the expected results you'll need to run the tests with the `UPDATE=1` environment flag.
 For example `UPDATE=1 npm run test-integration`, or if you would like to update only a specific type of integration test use `UPDATE=1 npx jest ./test/integration/style-spec/validate_spec.test.ts`
 
 # Publish style-spec NPM package

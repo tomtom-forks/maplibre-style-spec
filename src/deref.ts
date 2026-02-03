@@ -1,8 +1,10 @@
+import {refProperties} from './util/ref_properties';
+import {LayerSpecification} from './types.g';
 
-import refProperties from './util/ref_properties';
+export type LayerWithRef = LayerSpecification & {ref?: string};
 
-function deref(layer, parent) {
-    const result = {};
+function deref(layer: LayerWithRef, parent: LayerSpecification): LayerSpecification {
+    const result: Partial<LayerSpecification> = {};
 
     for (const k in layer) {
         if (k !== 'ref') {
@@ -16,25 +18,20 @@ function deref(layer, parent) {
         }
     });
 
-    return result;
+    return result as LayerSpecification;
 }
 
-export default derefLayers;
-
 /**
- * Given an array of layers, some of which may contain `ref` properties
- * whose value is the `id` of another property, return a new array where
- * such layers have been augmented with the 'type', 'source', etc. properties
- * from the parent layer, and the `ref` property has been removed.
  *
  * The input is not modified. The output may contain references to portions
  * of the input.
  *
- * @private
- * @param {Array<Layer>} layers
- * @returns {Array<Layer>}
+ * @param layers - array of layers, some of which may contain `ref` properties
+ * whose value is the `id` of another property
+ * @returns a new array where such layers have been augmented with the 'type', 'source', etc. properties
+ * from the parent layer, and the `ref` property has been removed.
  */
-function derefLayers(layers) {
+export function derefLayers(layers: LayerWithRef[]): LayerSpecification[] {
     layers = layers.slice();
 
     const map = Object.create(null);

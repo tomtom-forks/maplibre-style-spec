@@ -1,6 +1,6 @@
 import type {Type} from './types';
-import type ParsingContext from './parsing_context';
-import type EvaluationContext from './evaluation_context';
+import type {ParsingContext} from './parsing_context';
+import type {EvaluationContext} from './evaluation_context';
 
 /**
  * Expression
@@ -16,7 +16,10 @@ export interface Expression {
     outputDefined(): boolean;
 }
 
-export type ExpressionParser = (args: ReadonlyArray<unknown>, context: ParsingContext) => Expression;
+export type ExpressionParser = (
+    args: ReadonlyArray<unknown>,
+    context: ParsingContext
+) => Expression;
 export type ExpressionRegistration = {
     new (...args: any): Expression;
 } & {

@@ -1,4 +1,5 @@
 import {findStopLessThanOrEqualTo} from './stops';
+import {describe, test, expect} from 'vitest';
 
 describe('findStopLessThanOrEqualTo', () => {
     test('When the input > all stops it returns the last stop.', () => {
@@ -17,7 +18,5 @@ describe('findStopLessThanOrEqualTo', () => {
 
         index = findStopLessThanOrEqualTo([0.4, 0.5, 0.5, 0.6, 0.7], 0.5);
         expect(index).toBe(2);
-
     });
-
 });

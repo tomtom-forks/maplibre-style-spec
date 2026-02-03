@@ -1,13 +1,18 @@
 // Note: Do not inherit from Error. It breaks when transpiling to ES5.
 
-export default class ValidationError {
+export class ValidationError {
     message: string;
     identifier: string;
     line: number;
 
-    constructor(key: string, value: any & {
-        __line__: number;
-    }, message: string, identifier?: string | null) {
+    constructor(
+        key: string,
+        value: any & {
+            __line__: number;
+        },
+        message: string,
+        identifier?: string | null
+    ) {
         this.message = (key ? `${key}: ` : '') + message;
         if (identifier) this.identifier = identifier;
 

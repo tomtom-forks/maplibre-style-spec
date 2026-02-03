@@ -1,40 +1,143 @@
 {
+  "propertySpec": {
+    "type": "color",
+    "property-type": "data-driven",
+    "expression": {
+      "interpolated": true,
+      "parameters": [
+        "feature"
+      ]
+    }
+  },
   "expression": [
-    "to-rgba",
+    "interpolate",
     [
-      "interpolate",
-      ["exponential", 1],
-      ["get", "x"],
-      1,
-      "red",
-      11,
-      ["get", "color"]
+      "linear"
+    ],
+    [
+      "get",
+      "x"
+    ],
+    1,
+    "red",
+    11,
+    [
+      "get",
+      "color"
     ]
   ],
   "inputs": [
-    [{}, {"properties": {"x": 0, "color": "blue"}}],
-    [{}, {"properties": {"x": 5, "color": "blue"}}],
-    [{}, {"properties": {"x": 5, "color": "#0000ff00"}}],
-    [{}, {"properties": {"x": 5, "color": "rgb(0% 0% 100% / 0)"}}],
-    [{}, {"properties": {"x": 5, "color": "hsl(240 100% 50% / 0)"}}],
-    [{}, {"properties": {"x": 11, "color": "blue"}}],
-    [{}, {"properties": {"x": 11, "color": "oops blue"}}]
+    [
+      {},
+      {
+        "properties": {
+          "x": 0,
+          "color": "blue"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 5,
+          "color": "blue"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 5,
+          "color": "#0000ff00"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 5,
+          "color": "rgb(0% 0% 100% / 0)"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 5,
+          "color": "hsl(240 100% 50% / 0)"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 11,
+          "color": "blue"
+        }
+      }
+    ],
+    [
+      {},
+      {
+        "properties": {
+          "x": 11,
+          "color": "oops blue"
+        }
+      }
+    ]
   ],
   "expected": {
     "compiled": {
       "result": "success",
       "isFeatureConstant": false,
       "isZoomConstant": true,
-      "type": "array<number, 4>"
+      "type": "color"
     },
     "outputs": [
-      [255, 0, 0, 1],
-      [153, 0, 102, 1],
-      [153, 0, 102, 0.6],
-      [153, 0, 102, 0.6],
-      [153, 0, 102, 0.6],
-      [0, 0, 255, 1],
-      {"error": "Could not parse color from value 'oops blue'"}
+      [
+        1,
+        0,
+        0,
+        1
+      ],
+      [
+        0.6,
+        0,
+        0.4,
+        1
+      ],
+      [
+        0.36,
+        0,
+        0.24,
+        0.6
+      ],
+      [
+        0.36,
+        0,
+        0.24,
+        0.6
+      ],
+      [
+        0.36,
+        0,
+        0.24,
+        0.6
+      ],
+      [
+        0,
+        0,
+        1,
+        1
+      ],
+      {
+        "error": "Could not parse color from value 'oops blue'"
+      }
     ]
   }
 }

@@ -1,23 +1,23 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "outDir": "dist",
     "allowSyntheticDefaultImports": true,
     "checkJs": true,
     "isolatedModules": false,
     "noEmit": false,
-    "declaration": true,
+    "declaration": false,
     "esModuleInterop": true,
     "importHelpers": false,
     "jsx": "react",
-    "outDir": "tsc",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "skipLibCheck": false,
     "strict": false,
     "target": "ES2019",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "types": ["node", "jest", "geojson"]
+    "types": ["node", "geojson"]
   },
   "ts-node": {
     "experimentalSpecifierResolution": "node",

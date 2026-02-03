@@ -4,7 +4,7 @@ import type {Expression} from './expression';
  * Tracks `let` bindings during expression parsing.
  * @private
  */
-class Scope {
+export class Scope {
     parent: Scope;
     bindings: {[_: string]: Expression};
     constructor(parent?: Scope, bindings: Array<[string, Expression]> = []) {
@@ -20,8 +20,12 @@ class Scope {
     }
 
     get(name: string): Expression {
-        if (this.bindings[name]) { return this.bindings[name]; }
-        if (this.parent) { return this.parent.get(name); }
+        if (this.bindings[name]) {
+            return this.bindings[name];
+        }
+        if (this.parent) {
+            return this.parent.get(name);
+        }
         throw new Error(`${name} not found in scope.`);
     }
 
@@ -30,5 +34,3 @@ class Scope {
         return this.parent ? this.parent.has(name) : false;
     }
 }
-
-export default Scope;

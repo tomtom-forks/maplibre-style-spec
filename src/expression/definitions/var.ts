@@ -1,9 +1,9 @@
 import type {Type} from '../types';
 import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext  from '../evaluation_context';
+import type {ParsingContext} from '../parsing_context';
+import type {EvaluationContext} from '../evaluation_context';
 
-class Var implements Expression {
+export class Var implements Expression {
     type: Type;
     name: string;
     boundExpression: Expression;
@@ -16,11 +16,16 @@ class Var implements Expression {
 
     static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression {
         if (args.length !== 2 || typeof args[1] !== 'string')
-            return context.error('\'var\' expression requires exactly one string literal argument.') as null;
+            return context.error(
+                "'var' expression requires exactly one string literal argument."
+            ) as null;
 
         const name = args[1];
         if (!context.scope.has(name)) {
-            return context.error(`Unknown variable "${name}". Make sure "${name}" has been bound in an enclosing "let" expression before using it.`, 1) as null;
+            return context.error(
+                `Unknown variable "${name}". Make sure "${name}" has been bound in an enclosing "let" expression before using it.`,
+                1
+            ) as null;
         }
 
         return new Var(name, context.scope.get(name));
@@ -36,5 +41,3 @@ class Var implements Expression {
         return false;
     }
 }
-
-export default Var;

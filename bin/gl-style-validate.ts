@@ -1,12 +1,11 @@
 #!/usr/bin/env node
-/* eslint-disable no-process-exit */
 
 import minimist from 'minimist';
 import rw from 'rw';
-import validate from '../src/validate_style';
+import {validateStyle as validate} from '../src/validate_style';
 
 const argv = minimist(process.argv.slice(2), {
-    boolean: 'json',
+    boolean: 'json'
 });
 
 if (argv.help || argv.h || (!argv._.length && process.stdin.isTTY)) {

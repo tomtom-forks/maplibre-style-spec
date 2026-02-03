@@ -1,11 +1,11 @@
-import {Color} from './values';
 import type {FormattedSection} from './types/formatted';
 import type {GlobalProperties, Feature, FeatureState} from './index';
 import {ICanonicalTileID} from '../tiles_and_coordinates';
+import {Color} from './types/color';
 
 const geometryTypes = ['Unknown', 'Point', 'LineString', 'Polygon'];
 
-class EvaluationContext {
+export class EvaluationContext {
     globals: GlobalProperties;
     feature: Feature;
     featureState: FeatureState;
@@ -13,14 +13,14 @@ class EvaluationContext {
     availableImages: Array<string>;
     canonical: ICanonicalTileID;
 
-    _parseColorCache: {[_: string]: Color};
+    _parseColorCache: Map<string, Color>;
 
     constructor() {
         this.globals = null;
         this.feature = null;
         this.featureState = null;
         this.formattedSection = null;
-        this._parseColorCache = {};
+        this._parseColorCache = new Map<string, Color>();
         this.availableImages = null;
         this.canonical = null;
     }
@@ -30,7 +30,11 @@ class EvaluationContext {
     }
 
     geometryType() {
-        return this.feature ? typeof this.feature.type === 'number' ? geometryTypes[this.feature.type] : this.feature.type : null;
+        return this.feature
+            ? typeof this.feature.type === 'number'
+                ? geometryTypes[this.feature.type]
+                : this.feature.type
+            : null;
     }
 
     geometry() {
@@ -42,16 +46,15 @@ class EvaluationContext {
     }
 
     properties() {
-        return this.feature && this.feature.properties || {};
+        return (this.feature && this.feature.properties) || {};
     }
 
     parseColor(input: string): Color {
-        let cached = this._parseColorCache[input];
+        let cached = this._parseColorCache.get(input);
         if (!cached) {
-            cached = this._parseColorCache[input] = Color.parse(input) as Color;
+            cached = Color.parse(input);
+            this._parseColorCache.set(input, cached);
         }
         return cached;
     }
 }
-
-export default EvaluationContext;

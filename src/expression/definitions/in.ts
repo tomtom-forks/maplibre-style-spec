@@ -3,20 +3,20 @@ import {
     StringType,
     ValueType,
     NullType,
-    toString,
+    typeToString,
     NumberType,
     isValidType,
-    isValidNativeType,
+    isValidNativeType
 } from '../types';
-import RuntimeError from '../runtime_error';
+import {RuntimeError} from '../runtime_error';
 import {typeOf} from '../values';
 
 import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
+import type {ParsingContext} from '../parsing_context';
+import type {EvaluationContext} from '../evaluation_context';
 import type {Type} from '../types';
 
-class In implements Expression {
+export class In implements Expression {
     type: Type;
     needle: Expression;
     haystack: Expression;
@@ -29,7 +29,9 @@ class In implements Expression {
 
     static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression {
         if (args.length !== 3) {
-            return context.error(`Expected 2 arguments, but found ${args.length - 1} instead.`) as null;
+            return context.error(
+                `Expected 2 arguments, but found ${args.length - 1} instead.`
+            ) as null;
         }
 
         const needle = context.parse(args[1], 1, ValueType);
@@ -39,24 +41,30 @@ class In implements Expression {
         if (!needle || !haystack) return null;
 
         if (!isValidType(needle.type, [BooleanType, StringType, NumberType, NullType, ValueType])) {
-            return context.error(`Expected first argument to be of type boolean, string, number or null, but found ${toString(needle.type)} instead`) as null;
+            return context.error(
+                `Expected first argument to be of type boolean, string, number or null, but found ${typeToString(needle.type)} instead`
+            ) as null;
         }
 
         return new In(needle, haystack);
     }
 
     evaluate(ctx: EvaluationContext) {
-        const needle = (this.needle.evaluate(ctx) as any);
-        const haystack = (this.haystack.evaluate(ctx) as any);
+        const needle = this.needle.evaluate(ctx) as any;
+        const haystack = this.haystack.evaluate(ctx) as any;
 
         if (!haystack) return false;
 
         if (!isValidNativeType(needle, ['boolean', 'string', 'number', 'null'])) {
-            throw new RuntimeError(`Expected first argument to be of type boolean, string, number or null, but found ${toString(typeOf(needle))} instead.`);
+            throw new RuntimeError(
+                `Expected first argument to be of type boolean, string, number or null, but found ${typeToString(typeOf(needle))} instead.`
+            );
         }
 
         if (!isValidNativeType(haystack, ['string', 'array'])) {
-            throw new RuntimeError(`Expected second argument to be of type array or string, but found ${toString(typeOf(haystack))} instead.`);
+            throw new RuntimeError(
+                `Expected second argument to be of type array or string, but found ${typeToString(typeOf(haystack))} instead.`
+            );
         }
 
         return haystack.indexOf(needle) >= 0;
@@ -71,5 +79,3 @@ class In implements Expression {
         return true;
     }
 }
-
-export default In;

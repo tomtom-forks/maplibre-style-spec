@@ -1,56 +1,67 @@
-
-import extend from '../util/extend';
+import {extendBy} from '../util/extend';
 import {unbundle, deepUnbundle} from '../util/unbundle_jsonlint';
 import {isExpression} from '../expression';
 import {isFunction} from '../function';
 
-import validateFunction from './validate_function';
-import validateExpression from './validate_expression';
-import validateObject from './validate_object';
-import validateArray from './validate_array';
-import validateBoolean from './validate_boolean';
-import validateNumber from './validate_number';
-import validateColor from './validate_color';
-import validateConstants from './validate_constants';
-import validateEnum from './validate_enum';
-import validateFilter from './validate_filter';
-import validateLayer from './validate_layer';
-import validateSource from './validate_source';
-import validateLight from './validate_light';
-import validateSky from './validate_sky';
-import validateTerrain from './validate_terrain';
-import validateString from './validate_string';
-import validateFormatted from './validate_formatted';
-import validateImage from './validate_image';
-import validatePadding from './validate_padding';
-import validateVariableAnchorOffsetCollection from './validate_variable_anchor_offset_collection';
-import validateSprite from './validate_sprite';
-import ValidationError from '../error/validation_error';
+import {validateFunction} from './validate_function';
+import {validateExpression} from './validate_expression';
+import {validateObject} from './validate_object';
+import {validateArray} from './validate_array';
+import {validateBoolean} from './validate_boolean';
+import {validateNumber} from './validate_number';
+import {validateColor} from './validate_color';
+import {validateConstants} from './validate_constants';
+import {validateEnum} from './validate_enum';
+import {validateFilter} from './validate_filter';
+import {validateLayer} from './validate_layer';
+import {validateSource} from './validate_source';
+import {validateLight} from './validate_light';
+import {validateSky} from './validate_sky';
+import {validateTerrain} from './validate_terrain';
+import {validateString} from './validate_string';
+import {validateFormatted} from './validate_formatted';
+import {validateImage} from './validate_image';
+import {validatePadding} from './validate_padding';
+import {validateNumberArray} from './validate_number_array';
+import {validateColorArray} from './validate_color_array';
+import {validateVariableAnchorOffsetCollection} from './validate_variable_anchor_offset_collection';
+import {validateSprite} from './validate_sprite';
+import {ValidationError} from '../error/validation_error';
+import {validateProjection} from './validate_projection';
+import {validateProjectionDefinition} from './validate_projectiondefinition';
+import {validateState} from './validate_state';
+import {validateFontFaces} from './validate_font_faces';
 
 const VALIDATORS = {
     '*'() {
         return [];
     },
-    'array': validateArray,
-    'boolean': validateBoolean,
-    'number': validateNumber,
-    'color': validateColor,
-    'constants': validateConstants,
-    'enum': validateEnum,
-    'filter': validateFilter,
-    'function': validateFunction,
-    'layer': validateLayer,
-    'object': validateObject,
-    'source': validateSource,
-    'light': validateLight,
-    'sky': validateSky,
-    'terrain': validateTerrain,
-    'string': validateString,
-    'formatted': validateFormatted,
-    'resolvedImage': validateImage,
-    'padding': validatePadding,
-    'variableAnchorOffsetCollection': validateVariableAnchorOffsetCollection,
-    'sprite': validateSprite,
+    array: validateArray,
+    boolean: validateBoolean,
+    number: validateNumber,
+    color: validateColor,
+    constants: validateConstants,
+    enum: validateEnum,
+    filter: validateFilter,
+    function: validateFunction,
+    layer: validateLayer,
+    object: validateObject,
+    source: validateSource,
+    light: validateLight,
+    sky: validateSky,
+    terrain: validateTerrain,
+    projection: validateProjection,
+    projectionDefinition: validateProjectionDefinition,
+    string: validateString,
+    formatted: validateFormatted,
+    resolvedImage: validateImage,
+    padding: validatePadding,
+    numberArray: validateNumberArray,
+    colorArray: validateColorArray,
+    variableAnchorOffsetCollection: validateVariableAnchorOffsetCollection,
+    sprite: validateSprite,
+    state: validateState,
+    fontFaces: validateFontFaces
 };
 
 /**
@@ -69,14 +80,15 @@ const VALIDATORS = {
  * @param options.objectElementValidators - optional object of functions that will be called
  * @returns an array of errors, or an empty array if no errors are found.
  */
-export default function validate(options: {
+export function validate(options: {
     key: any;
     value: any;
     valueSpec: any;
     styleSpec: any;
     validateSpec?: any;
     style: any;
-    objectElementValidators?: any;}): ValidationError[] {
+    objectElementValidators?: any;
+}): ValidationError[] {
     const value = options.value;
     const valueSpec = options.valueSpec;
     const styleSpec = options.styleSpec;
@@ -84,17 +96,16 @@ export default function validate(options: {
 
     if (valueSpec.expression && isFunction(unbundle(value))) {
         return validateFunction(options);
-
     } else if (valueSpec.expression && isExpression(deepUnbundle(value))) {
         return validateExpression(options);
-
     } else if (valueSpec.type && VALIDATORS[valueSpec.type]) {
         return VALIDATORS[valueSpec.type](options);
-
     } else {
-        const valid = validateObject(extend({}, options, {
-            valueSpec: valueSpec.type ? styleSpec[valueSpec.type] : valueSpec
-        }));
+        const valid = validateObject(
+            extendBy({}, options, {
+                valueSpec: valueSpec.type ? styleSpec[valueSpec.type] : valueSpec
+            })
+        );
         return valid;
     }
 }

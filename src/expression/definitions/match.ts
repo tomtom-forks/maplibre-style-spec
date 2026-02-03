@@ -1,19 +1,18 @@
-
 import {typeOf} from '../values';
 import {ValueType} from '../types';
 
 import type {Type} from '../types';
 
 import type {Expression} from '../expression';
-import type ParsingContext from '../parsing_context';
-import type EvaluationContext from '../evaluation_context';
+import type {ParsingContext} from '../parsing_context';
+import type {EvaluationContext} from '../evaluation_context';
 
 // Map input label values to output expression index
 type Cases = {
     [k in number | string]: number;
 };
 
-class Match implements Expression {
+export class Match implements Expression {
     type: Type;
     inputType: Type;
 
@@ -22,7 +21,14 @@ class Match implements Expression {
     outputs: Array<Expression>;
     otherwise: Expression;
 
-    constructor(inputType: Type, outputType: Type, input: Expression, cases: Cases, outputs: Array<Expression>, otherwise: Expression) {
+    constructor(
+        inputType: Type,
+        outputType: Type,
+        input: Expression,
+        cases: Cases,
+        outputs: Array<Expression>,
+        otherwise: Expression
+    ) {
         this.inputType = inputType;
         this.type = outputType;
         this.input = input;
@@ -33,7 +39,9 @@ class Match implements Expression {
 
     static parse(args: ReadonlyArray<unknown>, context: ParsingContext): Expression {
         if (args.length < 5)
-            return context.error(`Expected at least 4 arguments, but found only ${args.length - 1}.`) as null;
+            return context.error(
+                `Expected at least 4 arguments, but found only ${args.length - 1}.`
+            ) as null;
         if (args.length % 2 !== 1)
             return context.error('Expected an even number of arguments.') as null;
 
@@ -61,11 +69,13 @@ class Match implements Expression {
                 if (typeof label !== 'number' && typeof label !== 'string') {
                     return labelContext.error('Branch labels must be numbers or strings.') as null;
                 } else if (typeof label === 'number' && Math.abs(label) > Number.MAX_SAFE_INTEGER) {
-                    return labelContext.error(`Branch labels must be integers no larger than ${Number.MAX_SAFE_INTEGER}.`) as null;
-
+                    return labelContext.error(
+                        `Branch labels must be integers no larger than ${Number.MAX_SAFE_INTEGER}.`
+                    ) as null;
                 } else if (typeof label === 'number' && Math.floor(label) !== label) {
-                    return labelContext.error('Numeric branch labels must be integer values.') as null;
-
+                    return labelContext.error(
+                        'Numeric branch labels must be integer values.'
+                    ) as null;
                 } else if (!inputType) {
                     inputType = typeOf(label);
                 } else if (labelContext.checkSubtype(inputType, typeOf(label))) {
@@ -91,16 +101,20 @@ class Match implements Expression {
         const otherwise = context.parse(args[args.length - 1], args.length - 1, outputType);
         if (!otherwise) return null;
 
-        if (input.type.kind !== 'value' && context.concat(1).checkSubtype(((inputType as any)), input.type)) {
+        if (
+            input.type.kind !== 'value' &&
+            context.concat(1).checkSubtype(inputType as any, input.type)
+        ) {
             return null;
         }
 
-        return new Match((inputType as any), (outputType as any), input, cases, outputs, otherwise);
+        return new Match(inputType as any, outputType as any, input, cases, outputs, otherwise);
     }
 
     evaluate(ctx: EvaluationContext) {
-        const input = (this.input.evaluate(ctx) as any);
-        const output = (typeOf(input) === this.inputType && this.outputs[this.cases[input]]) || this.otherwise;
+        const input = this.input.evaluate(ctx) as any;
+        const output =
+            (typeOf(input) === this.inputType && this.outputs[this.cases[input]]) || this.otherwise;
         return output.evaluate(ctx);
     }
 
@@ -111,8 +125,6 @@ class Match implements Expression {
     }
 
     outputDefined(): boolean {
-        return this.outputs.every(out => out.outputDefined()) && this.otherwise.outputDefined();
+        return this.outputs.every((out) => out.outputDefined()) && this.otherwise.outputDefined();
     }
 }
-
-export default Match;
